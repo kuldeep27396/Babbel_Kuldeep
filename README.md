@@ -2,8 +2,8 @@
 # Event Processing and Storage with AWS Lambda and Kinesis
 
 ## Architecture Diagram
+![image](https://github.com/kuldeep27396/Babbel_Kuldeep/assets/61800838/f8ad2a45-8237-4f31-a4d7-c1d625115a7d)
 
-![Architecture Diagram](https://app.eraser.io/workspace/gaLBYbXeLsi8z1ihVgaP?origin=share)
 
 ### Components:
 
