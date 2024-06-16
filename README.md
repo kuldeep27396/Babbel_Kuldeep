@@ -3,7 +3,7 @@
 
 ## Architecture Diagram
 
-![Architecture Diagram](architecture.png)
+![Architecture Diagram](https://app.eraser.io/workspace/gaLBYbXeLsi8z1ihVgaP?origin=share)
 
 ### Components:
 
