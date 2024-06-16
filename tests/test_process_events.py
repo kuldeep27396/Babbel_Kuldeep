@@ -1,27 +1,53 @@
 import unittest
-from process_events import transform_event
+from unittest.mock import MagicMock
+from datetime import datetime
+import json
 
-class TestEventTransformation(unittest.TestCase):
+import boto3
 
-    def test_transform_event(self):
+from process_events import lambda_handler
+
+
+class TestLambdaHandler(unittest.TestCase):
+
+    def setUp(self):
+        self.mock_s3_client = MagicMock()
+        self.original_boto3_client = boto3.client
+        boto3.client = MagicMock(return_value=self.mock_s3_client)
+
+    def tearDown(self):
+        boto3.client = self.original_boto3_client
+
+    def test_lambda_handler(self):
         event_data = {
-            'event_uuid': '123456789',
-            'event_name': 'account:created',
-            'created_at': 1623862800
+            'Records': [
+                {
+                    'kinesis': {
+                        'data': json.dumps({
+                            'event_uuid': '1234567890',
+                            'event_name': 'example_event:subtype',
+                            'created_at': 1633369261
+                        })
+                    }
+                }
+            ]
         }
 
-        expected_transformed_event = {
-            'event_uuid': '123456789',
-            'event_name': 'account:created',
-            'created_at': 1623862800,
-            'created_datetime': '2021-06-16T12:00:00',
-            'event_type': 'account',
-            'event_subtype': 'created'
-        }
+        response = lambda_handler(event_data, None)
 
-        transformed_event = transform_event(event_data)
+        self.assertEqual(response['statusCode'], 200)
 
-        self.assertEqual(transformed_event, expected_transformed_event)
+        expected_message = 'Processed 1 records.'
+        self.assertIn(expected_message, response['body'])
+
+        self.mock_s3_client.put_object.assert_called_once()
+        call_args = self.mock_s3_client.put_object.call_args
+        put_object_args, put_object_kwargs = call_args
+        self.assertEqual(put_object_kwargs['Bucket'], 'your-s3-bucket-name')
+        self.assertTrue(put_object_kwargs['Key'].startswith('events/1234567890.json'))
+
+
 
 if __name__ == '__main__':
     unittest.main()
+
