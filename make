@@ -1,6 +1,7 @@
 # Variables
+PYTHON_INTERPRETER := python3
 TF_DIR := terraform
-LAMBDA_ZIP := lambda_function.zip
+LAMBDA_ZIP := process_events.zip
 LAMBDA_FUNCTION_NAME := ProcessEventsLambda
 TF_VARS := $(TF_DIR)/terraform.tfvars
 
@@ -8,27 +9,25 @@ TF_VARS := $(TF_DIR)/terraform.tfvars
 .PHONY: setup deploy test clean
 
 setup:
-	@echo "=== Setting up environment ==="
-	@echo "Installing Terraform dependencies..."
-	@cd $(TF_DIR) && terraform init
+	@echo "=== Setting up Python environment ==="
+	@$(PYTHON_INTERPRETER) -m venv venv
+	@venv\Scripts\activate.bat
+	@$(PYTHON_INTERPRETER) -m pip install --upgrade pip setuptools wheel
+	@$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
 
 deploy: $(LAMBDA_ZIP)
 	@echo "=== Deploying Lambda function and infrastructure ==="
-	@echo "Packaging Lambda function..."
-	@zip -r $(LAMBDA_ZIP) lambda_function.py
-	@echo "Deploying infrastructure with Terraform..."
+	@cd $(TF_DIR) && terraform init
 	@cd $(TF_DIR) && terraform apply -auto-approve
 
 test:
 	@echo "=== Running tests ==="
-	@echo "Running unit tests..."
-	@python -m unittest discover -s tests -p '*_test.py'
+	@$(PYTHON_INTERPRETER) -m pytest tests
 
 clean:
 	@echo "=== Cleaning up ==="
-	@echo "Removing Terraform state and temporary files..."
 	@cd $(TF_DIR) && terraform destroy -auto-approve
-	@rm -f $(LAMBDA_ZIP)
+	@rm -rf venv $(LAMBDA_ZIP)
 
 $(LAMBDA_ZIP): lambda_function.py
-	@zip -r $(LAMBDA_ZIP) lambda_function.py
+	@zip -r $(LAMBDA_ZIP) process_events.py
