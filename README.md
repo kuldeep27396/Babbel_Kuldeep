@@ -1,6 +1,3 @@
-Certainly! Below is a README file that documents the solution for processing events from AWS Kinesis, transforming them using AWS Lambda, and storing them in AWS S3. It includes an architecture diagram, explanations of technologies chosen, and answers to design questions.
-
----
 
 # Event Processing and Storage with AWS Lambda and Kinesis
 
